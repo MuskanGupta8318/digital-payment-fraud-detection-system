@@ -1,7 +1,9 @@
 import pandas as pd
 import os
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+
 
 def log(message):
     print(f"[INFO]{message}")
@@ -10,6 +12,8 @@ def error(message):
     print(f"[ERROR]{message}")
 
 file_path="data/creditcard.csv"
+
+
 
 try :
     if not os.path.exists(file_path):
@@ -38,6 +42,7 @@ try:
         raise ValueError(f"Column {TARGET} not found")
     
 except Exception as e:
+    error(e)
     exit()
 
 try:
@@ -46,14 +51,16 @@ try:
 
     if missing>0:
         log("Remove missing Values")
-        df=df.dropna
+        df=df.dropna()
 
 except Exception as e:
     error(f"Error Handling missing values {e}")
+    exit()
 
 try:
     fraud=df[df[TARGET]==1]
     normal=df[df[TARGET]==0]
+    print(df["Class"].value_counts())
     log(f"Fraud Count :{len(fraud)}")
     log(f"Normal Count:{len(normal)}")
 
@@ -75,6 +82,9 @@ except Exception as e:
 try:
     X=df_balanced.drop(TARGET,axis=1)
     y=df_balanced[TARGET]
+    os.makedirs("models", exist_ok=True)
+    joblib.dump(X.columns.tolist(), "models/feature_names.pkl")
+    log("Feature names saved successfully")
     
     if X.empty:
         raise ValueError("Feature set is empty")
@@ -84,7 +94,7 @@ except Exception as e:
     exit()
 
 try:
-    X_train,X_test,Y_train,Y_test=train_test_split(X,y,test_size=0.2,random_state=42)
+    X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=42)
     log("Train-Test-Split successful")
 
 except Exception as e:
@@ -96,8 +106,8 @@ try:
     X_train_scaled=scaler.fit_transform(X_train)
     X_test_scaled=scaler.transform(X_test)
 
-    X_train_scaled=pd.DataFrame(X_train_scaled,columns=X.columns)
-    X_test_scaled=pd.DataFrame(X_test_scaled,columns==X.columns)
+    X_train_scaled = pd.DataFrame(X_train_scaled, columns=X.columns)
+    X_test_scaled = pd.DataFrame(X_test_scaled, columns=X.columns)
 
     log("Feature scaling completed")
 
@@ -107,7 +117,7 @@ except Exception as e:
 
 
 try:
-    od.makedirs("data/processed",exist_ok=True)
+    os.makedirs("data/preprocessed",exist_ok=True)
     X_train_scaled.to_csv("data/preprocessed/X_train.csv",index=False)
     X_test_scaled.to_csv("data/preprocessed/X_test.csv",index=False)
     y_train.to_csv("data/preprocessed/y_train.csv",index=False)
