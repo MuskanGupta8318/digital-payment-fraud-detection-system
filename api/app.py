@@ -59,9 +59,9 @@ def predict():
         probability = model.predict_proba(scaled)[0][1]
 
         # Risk logic
-        if probability > 0.8:
+        if probability > 0.75:
             risk = "High Risk"
-        elif probability > 0.5:
+        elif probability > 0.3:
             risk = "Medium Risk"
         else:
             risk = "Low Risk"
